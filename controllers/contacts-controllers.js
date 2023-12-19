@@ -35,7 +35,7 @@ const add = async (req, res, next) => {
     const validateResult = contactAddSchema.validate(req.body);
 
     if (validateResult.error) {
-      throw HttpError(400, error.message);
+      throw HttpError(400, validateResult.error.message);
     }
     const result = await contactsService.addContact(req.body);
     res.status(201).json(result);
@@ -49,7 +49,7 @@ const updateById = async (req, res, next) => {
     const validateResult = contactUpdateSchema.validate(req.body);
 
     if (validateResult.error) {
-      throw HttpError(400, error.message);
+      throw HttpError(400, validateResult.error.message);
     }
 
     const { id } = req.params;
