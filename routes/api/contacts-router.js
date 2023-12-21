@@ -12,8 +12,8 @@ contactsRouter.get("/:id", controllers.getById);
 
 contactsRouter.post("/", isEmptyBody, controllers.add);
 
-contactsRouter.put("/:id", isEmptyBody, controllers.updateById);
+// contactsRouter.put("/:id", isEmptyBody, controllers.updateById);
 
-contactsRouter.delete("/:id", controllers.deleteById);
+// contactsRouter.delete("/:id", controllers.deleteById);
 
 export default contactsRouter;
