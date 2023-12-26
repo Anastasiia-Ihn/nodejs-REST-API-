@@ -2,7 +2,11 @@ import express from "express";
 
 import controllers from "../../controllers/contacts-controllers.js";
 
-import { isEmptyBody, isValidId } from "../../middlewares/index.js";
+import {
+  isEmptyBody,
+  isValidId,
+  isEmptyBodyFavorite,
+} from "../../middlewares/index.js";
 
 const contactsRouter = express.Router();
 
@@ -17,7 +21,7 @@ contactsRouter.put("/:id", isValidId, isEmptyBody, controllers.updateById);
 contactsRouter.patch(
   "/:id/favorite",
   isValidId,
-  isEmptyBody,
+  isEmptyBodyFavorite,
   controllers.updateStatusContact
 );
 
