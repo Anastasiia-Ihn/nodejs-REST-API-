@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-import User from "../models/User.js";
+import User, { subscriptionSchema } from "../models/User.js";
 
 import { HttpError } from "../helpers/index.js";
 
@@ -93,10 +93,31 @@ const logout = async (req, res) => {
     message: "No Content",
   });
 };
+const changeSubscription = async (req, res, next) => {
+  try {
+    const validateResult = subscriptionSchema.validate(req.body);
 
+    if (validateResult.error) {
+      throw HttpError(400, validateResult.error.message);
+    }
+    const { _id } = req.user;
+    console.log(req.user);
+
+    const result = await User.findOneAndUpdate(_id, req.body, {
+      new: true,
+    });
+    if (!result) {
+      throw HttpError(404, `Contact id:${id} not found`);
+    }
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
 export default {
   signup,
   signin,
   getCurrent,
   logout,
+  changeSubscription,
 };
