@@ -10,16 +10,16 @@ import {
 
 const authRouter = express.Router();
 
-authRouter.post("/signup", isEmptyBody, authController.signup);
+authRouter.post("/register", isEmptyBody, authController.signup);
 
-authRouter.post("/signin", isEmptyBody, authController.signin);
+authRouter.post("/login", isEmptyBody, authController.signin);
 
-authRouter.get("/users/current", authenticate, authController.getCurrent);
+authRouter.get("/current", authenticate, authController.getCurrent);
 
-authRouter.post("/users/logout", authenticate, authController.logout);
+authRouter.post("/logout", authenticate, authController.logout);
 
 authRouter.patch(
-  "/users",
+  "/",
   authenticate,
   isEmptyBody,
   authController.changeSubscription
