@@ -5,18 +5,13 @@ import authController from "../../controllers/auth-controllers.js";
 import {
   authenticate,
   isEmptyBody,
-  isValidId,
+  isEmptyFile,
   upload,
 } from "../../middlewares/index.js";
 
 const authRouter = express.Router();
 
-authRouter.post(
-  "/register",
-  upload.single("avatar"),
-  isEmptyBody,
-  authController.signup
-);
+authRouter.post("/register", isEmptyBody, authController.signup);
 
 authRouter.post("/login", isEmptyBody, authController.signin);
 
@@ -33,8 +28,10 @@ authRouter.patch(
 
 authRouter.patch(
   "/avatars",
+  upload.single("avatar"),
+
   authenticate,
-  isEmptyBody,
+  isEmptyFile,
   authController.changeAvatar
 );
 

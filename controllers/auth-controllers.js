@@ -1,6 +1,9 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
+import fs from "fs/promises";
+import path from "path";
+import Jimp from "jimp";
 
 import { HttpError } from "../helpers/index.js";
 
@@ -9,7 +12,10 @@ import User, {
   subscriptionSchema,
   userSignupSchema,
 } from "../models/User.js";
+
 import { ctrlWrapper } from "../decorators/index.js";
+
+const avatarPath = path.resolve("public", "avatars");
 
 const { JWT_SECRET } = process.env;
 
@@ -113,10 +119,33 @@ const changeSubscription = async (req, res) => {
 };
 
 const changeAvatar = async (req, res) => {
-  // const { _id } = req.user;
-  // console.log(req.user);
-  console.log(req.body);
-  console.log(req.file);
+  const { _id, email } = req.user;
+
+  const { path: oldPath, filename } = req.file;
+
+  const newPath = path.join(avatarPath, filename);
+
+  await fs.rename(oldPath, newPath);
+
+  const avatarURL = path.join("avatars", filename);
+
+  Jimp.read(newPath, (err, file) => {
+    if (err) throw err;
+    file.resize(250, 250);
+  });
+
+  const result = await User.findByIdAndUpdate(
+    _id,
+    { avatarURL },
+    {
+      new: true,
+    }
+  );
+
+  if (!result) {
+    throw HttpError(401, `Not authorized`);
+  }
+  res.json({ avatarURL });
 };
 export default {
   signup: ctrlWrapper(signup),

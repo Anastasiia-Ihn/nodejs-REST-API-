@@ -1,14 +1,12 @@
 import multer from "multer";
 import path from "path";
 
-import { HttpError } from "../helpers/index.js";
-
 const destination = path.resolve("tmp");
 
 const storage = multer.diskStorage({
   destination,
   filename: (req, file, callback) => {
-    const uniquePreffix = `${Date.now() * Math.random()}`;
+    const uniquePreffix = `${Math.round(Date.now() * Math.random())}`;
     const filename = `${uniquePreffix}_${file.originalname}`;
     callback(null, filename);
   },
