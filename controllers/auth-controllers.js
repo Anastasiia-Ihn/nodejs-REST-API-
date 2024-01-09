@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import gravatar from "gravatar";
 
 import { HttpError } from "../helpers/index.js";
 
@@ -27,7 +28,13 @@ const signup = async (req, res) => {
 
   const hashPassword = await bcrypt.hash(password, 10);
 
-  const newUser = await User.create({ ...req.body, password: hashPassword });
+  const avatarURL = gravatar.url(email);
+
+  const newUser = await User.create({
+    ...req.body,
+    password: hashPassword,
+    avatarURL,
+  });
 
   res.status(201).json({
     user: {
@@ -104,10 +111,18 @@ const changeSubscription = async (req, res) => {
   }
   res.json(result);
 };
+
+const changeAvatar = async (req, res) => {
+  // const { _id } = req.user;
+  // console.log(req.user);
+  console.log(req.body);
+  console.log(req.file);
+};
 export default {
   signup: ctrlWrapper(signup),
   signin: ctrlWrapper(signin),
   getCurrent: ctrlWrapper(getCurrent),
   logout: ctrlWrapper(logout),
   changeSubscription: ctrlWrapper(changeSubscription),
+  changeAvatar: ctrlWrapper(changeAvatar),
 };
