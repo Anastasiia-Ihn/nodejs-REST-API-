@@ -119,6 +119,10 @@ const changeSubscription = async (req, res) => {
 };
 
 const changeAvatar = async (req, res) => {
+  if (!req.file) {
+    throw HttpError(400, "Image required");
+  }
+
   const { _id, email } = req.user;
 
   const { path: oldPath, filename } = req.file;
@@ -129,17 +133,16 @@ const changeAvatar = async (req, res) => {
 
   const avatarURL = path.join("avatars", filename);
 
-  Jimp.read(newPath, (err, file) => {
-    if (err) throw err;
-    file.resize(250, 250);
+  Jimp.read(newPath).then((file) => {
+    file.resize(250, 250).write(`${avatarPath}/${Date.now()}_${email}.jpg`);
   });
+
+  await fs.unlink(newPath);
 
   const result = await User.findByIdAndUpdate(
     _id,
     { avatarURL },
-    {
-      new: true,
-    }
+    { new: true }
   );
 
   if (!result) {
