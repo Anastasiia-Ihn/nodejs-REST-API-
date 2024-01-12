@@ -119,10 +119,6 @@ const changeSubscription = async (req, res) => {
 };
 
 const changeAvatar = async (req, res) => {
-  if (!req.file) {
-    throw HttpError(400, "Image required");
-  }
-
   const { _id, email } = req.user;
 
   const { path: oldPath, filename } = req.file;

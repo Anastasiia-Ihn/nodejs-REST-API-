@@ -1,9 +1,9 @@
 import { HttpError } from "../helpers/index.js";
 
 const isEmptyFile = (req, res, next) => {
-  const { length } = Object.keys(req.file);
-  if (!length) {
-    return next(HttpError(400, "missing fields"));
+  console.log(req.file);
+  if (!req.file) {
+    return next(HttpError(400, "Image required"));
   }
   next();
 };
