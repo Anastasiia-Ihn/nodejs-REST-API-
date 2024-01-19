@@ -121,19 +121,21 @@ const changeSubscription = async (req, res) => {
 const changeAvatar = async (req, res) => {
   const { _id, email } = req.user;
 
-  const { path: oldPath, filename } = req.file;
+  const { path: oldPath, originalname } = req.file;
+
+  const uniquePreffix = `${Math.round(Date.now() * Math.random())}`;
+
+  const filename = `${uniquePreffix}_${originalname}`;
 
   const newPath = path.join(avatarPath, filename);
 
-  await fs.rename(oldPath, newPath);
-
   const avatarURL = path.join("avatars", filename);
 
-  Jimp.read(newPath).then((file) => {
-    file.resize(250, 250).write(`${avatarPath}/${Date.now()}_${email}.jpg`);
+  Jimp.read(oldPath).then((file) => {
+    file.resize(250, 250).write(newPath);
   });
 
-  await fs.unlink(newPath);
+  await fs.rename(oldPath, newPath);
 
   const result = await User.findByIdAndUpdate(
     _id,
