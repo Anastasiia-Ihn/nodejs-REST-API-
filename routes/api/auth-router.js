@@ -5,7 +5,8 @@ import authController from "../../controllers/auth-controllers.js";
 import {
   authenticate,
   isEmptyBody,
-  isValidId,
+  isEmptyFile,
+  upload,
 } from "../../middlewares/index.js";
 
 const authRouter = express.Router();
@@ -23,6 +24,15 @@ authRouter.patch(
   authenticate,
   isEmptyBody,
   authController.changeSubscription
+);
+
+authRouter.patch(
+  "/avatars",
+  upload.single("avatar"),
+
+  authenticate,
+  isEmptyFile,
+  authController.changeAvatar
 );
 
 export default authRouter;
