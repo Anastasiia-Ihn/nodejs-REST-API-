@@ -12,6 +12,7 @@ import User, {
   userSigninSchema,
   subscriptionSchema,
   userSignupSchema,
+  userEmailSchema,
 } from "../models/User.js";
 
 import { ctrlWrapper } from "../decorators/index.js";
@@ -77,6 +78,35 @@ const verify = async (req, res) => {
   res.json({ message: "Verification successful" });
 };
 
+const resendVerifyEmail = async (req, res) => {
+  const validateResult = userEmailSchema.validate(req.body);
+
+  if (validateResult.error) {
+    throw HttpError(400, validateResult.error.message);
+  }
+
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw HttpError(404, "User not found");
+  }
+
+  if (user.verify) {
+    throw HttpError(400, "Verification has already been passed");
+  }
+  const verifyEmail = {
+    to: email,
+    subject: "Verify email",
+    html: `<a target="_blank" href="${BASE_URL}/api/users/verify/${user.verificationToken}">Click here</a>`,
+  };
+
+  await sendEmail(verifyEmail);
+
+  res.json({ message: "Verification email sent" });
+};
+
 const signin = async (req, res) => {
   const validateResult = userSigninSchema.validate(req.body);
 
@@ -91,7 +121,7 @@ const signin = async (req, res) => {
   }
 
   if (!user.verify) {
-    throw HttpError(401, "Email.not verify");
+    throw HttpError(401, "Email not verify");
   }
 
   const passwordCompare = await bcrypt.compare(password, user.password);
@@ -180,6 +210,7 @@ const changeAvatar = async (req, res) => {
   res.json({ avatarURL });
 };
 export default {
+  resendVerifyEmail: ctrlWrapper(resendVerifyEmail),
   signup: ctrlWrapper(signup),
   verify: ctrlWrapper(verify),
   signin: ctrlWrapper(signin),
