@@ -4,8 +4,9 @@ import gravatar from "gravatar";
 import fs from "fs/promises";
 import path from "path";
 import Jimp from "jimp";
+import { nanoid } from "nanoid";
 
-import { HttpError } from "../helpers/index.js";
+import { HttpError, sendEmail } from "../helpers/index.js";
 
 import User, {
   userSigninSchema,
@@ -17,7 +18,7 @@ import { ctrlWrapper } from "../decorators/index.js";
 
 const avatarPath = path.resolve("public", "avatars");
 
-const { JWT_SECRET } = process.env;
+const { JWT_SECRET, BASE_URL } = process.env;
 
 const signup = async (req, res) => {
   const validateResult = userSignupSchema.validate(req.body);
@@ -36,11 +37,22 @@ const signup = async (req, res) => {
 
   const avatarURL = gravatar.url(email);
 
+  const verificationToken = nanoid();
+
   const newUser = await User.create({
     ...req.body,
     password: hashPassword,
     avatarURL,
+    verificationToken,
   });
+
+  const verifyEmail = {
+    to: email,
+    subject: "Verify email",
+    html: `<a target="_blank" href="${BASE_URL}/api/users/verify/${verificationToken}">Click here</a>`,
+  };
+
+  await sendEmail(verifyEmail);
 
   res.status(201).json({
     user: {
@@ -48,6 +60,21 @@ const signup = async (req, res) => {
       subscription: newUser.subscription,
     },
   });
+};
+
+const verify = async (req, res) => {
+  const { verificationToken } = req.params;
+  const user = await User.findOne({ verificationToken });
+  if (!user) {
+    throw HttpError(404, "User not found");
+  }
+
+  await User.findByIdAndUpdate(user._id, {
+    verify: true,
+    verificationToken: null,
+  });
+
+  res.json({ message: "Verification successful" });
 };
 
 const signin = async (req, res) => {
@@ -61,6 +88,10 @@ const signin = async (req, res) => {
   const user = await User.findOne({ email });
   if (!user) {
     throw HttpError(401, "Email or password is wrong");
+  }
+
+  if (!user.verify) {
+    throw HttpError(401, "Email.not verify");
   }
 
   const passwordCompare = await bcrypt.compare(password, user.password);
@@ -150,6 +181,7 @@ const changeAvatar = async (req, res) => {
 };
 export default {
   signup: ctrlWrapper(signup),
+  verify: ctrlWrapper(verify),
   signin: ctrlWrapper(signin),
   getCurrent: ctrlWrapper(getCurrent),
   logout: ctrlWrapper(logout),
